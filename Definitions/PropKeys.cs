@@ -12,5 +12,6 @@ namespace CConn
         public const string PROP_FLAG = "flag";
         public const string PROP_SERVER_IP = "server_ip";
         public const string PROP_SERVER_PORT = "server_port";
+        public const string PROP_RECV_BUFFER_SIZE = "recv_buffer_size";
     }
 }

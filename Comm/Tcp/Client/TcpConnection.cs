@@ -21,6 +21,7 @@ namespace CConn
         private int minReconnectRetryTime = DEFAULT_MIN_RECONNECT_RETRY_TIME_DEFAULT;
         private int maxReconnectRetryTime = DEFAULT_MAX_RECONNECT_RETRY_TIME_DEFAULT;
         private int currentReconnectRetryTime = DEFAULT_MIN_RECONNECT_RETRY_TIME_DEFAULT;
+        private int recvBufferSize = Constants.DEFAULT_RECV_BUFFER_SIZE;
         private CommHandler commHandler = null;
         private bool isStarted = false;
 
@@ -122,6 +123,7 @@ namespace CConn
             minReconnectRetryTime = configProps.Get(PropKeys.PROP_MIN_RECONNECT_RETRY_TIME, DEFAULT_MIN_RECONNECT_RETRY_TIME_DEFAULT);
             maxReconnectRetryTime = configProps.Get(PropKeys.PROP_MAX_RECONNECT_RETRY_TIME, DEFAULT_MAX_RECONNECT_RETRY_TIME_DEFAULT);
             currentReconnectRetryTime = Math.Min(maxReconnectRetryTime, minReconnectRetryTime);
+            recvBufferSize = configProps.Get(PropKeys.PROP_RECV_BUFFER_SIZE, Constants.DEFAULT_RECV_BUFFER_SIZE);
 
             TcpConnect();
 
@@ -245,22 +247,26 @@ namespace CConn
                         subscribeManager.Clear();
 
                         TcpComm tcpComm = new TcpComm(new TcpClient(), ipAddress, port);
-                        commHandler = new CommHandler(true, tcpComm, logger,
-                                (handler, isForce) =>
+                        commHandler = new CommHandler(
+                            true,
+                            tcpComm,
+                            logger,
+                            recvBufferSize,
+                            (handler, isForce) =>
+                            {
+                                if (!isForce && autoConnect)
                                 {
-                                    if (!isForce && autoConnect)
-                                    {
-                                        ScheduleReconnect();
-                                    }
-                                },
-                                (msg) =>
-                                {
-                                    OnMsgArrived(msg);
-                                },
-                                (connectionState, exception) =>
-                                {
-                                    ChangeConnectionState(connectionState, exception);
-                                });
+                                    ScheduleReconnect();
+                                }
+                            },
+                            (msg) =>
+                            {
+                                OnMsgArrived(msg);
+                            },
+                            (connectionState, exception) =>
+                            {
+                                ChangeConnectionState(connectionState, exception);
+                            });
 
                         commHandler.Run();
                     }, TaskCreationOptions.LongRunning);

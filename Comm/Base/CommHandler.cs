@@ -9,7 +9,6 @@ namespace CConn
 
     internal class CommHandler
     {
-        private const int BUFFER_SIZE = 8192;
         private const int MSG_COMPLETENESS_NONE = 0;
         private const int MSG_COMPLETENESS_FLAG = 1;
         private const int MSG_COMPLETENESS_HEADER = 2;
@@ -22,17 +21,19 @@ namespace CConn
         private OnConnectionStateListener onConnectionStateListener;
         private Stream stream;
         private bool isClose = false;
-        private byte[] buffer = new byte[BUFFER_SIZE];
+        private byte[] buffer = null;
         private int bufferDataStartOffset = 0;
         private int bufferDataLen = 0;
         private int msgCompleteness = MSG_COMPLETENESS_NONE;
         private MsgHeader currentHeader = new MsgHeader();
         private Msg currentMsg = new Msg();
+        private int recvBufferSize = Constants.DEFAULT_RECV_BUFFER_SIZE;
 
         public CommHandler(
                 bool isClient,
                 IComm comm,
                 ILogger logger,
+                int recvBufferSize = Constants.DEFAULT_RECV_BUFFER_SIZE,
                 OnCommCloseListener onCommCloseListener = null,
                 OnMsgArrivedListener onMsgArrivedListener = null,
                 OnConnectionStateListener onConnectionStateListener = null
@@ -44,6 +45,8 @@ namespace CConn
             this.onCommCloseListener = onCommCloseListener;
             this.onMsgArrivedListener = onMsgArrivedListener;
             this.onConnectionStateListener = onConnectionStateListener;
+            this.recvBufferSize = recvBufferSize;
+            this.buffer = new byte[recvBufferSize];
         }
 
         internal void SetOnCommCloseListener(OnCommCloseListener onCommCloseListener) 
@@ -273,7 +276,7 @@ namespace CConn
 
         private int GetBufferLeftSize()
         {
-            return BUFFER_SIZE - (bufferDataStartOffset + bufferDataLen);
+            return recvBufferSize - (bufferDataStartOffset + bufferDataLen);
         }
 
         private void MsgArrive(Msg msg)

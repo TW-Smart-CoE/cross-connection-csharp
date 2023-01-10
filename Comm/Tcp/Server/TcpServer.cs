@@ -13,6 +13,7 @@ namespace CConn
         private TcpListener server = null;
         private ILogger logger = new DefaultLogger();
         private int serverPort = PROPERTY_PORT_DEFAULT;
+        private int recvBufferSize = Constants.DEFAULT_RECV_BUFFER_SIZE;
         private ServerCommPubSubManager serverPubSubManager;
 
         public TcpServer()
@@ -44,6 +45,8 @@ namespace CConn
                 return false;
             }
 
+            recvBufferSize = configProps.Get(PropKeys.PROP_RECV_BUFFER_SIZE, Constants.DEFAULT_RECV_BUFFER_SIZE);
+
             Stop();
 
             CreateServer();
@@ -59,7 +62,7 @@ namespace CConn
                         {
                             logger.Debug("Waiting for a connection ...");
 
-                            TcpClient client;
+                            System.Net.Sockets.TcpClient client;
                             try
                             {
                                 client = server.AcceptTcpClient();
@@ -77,12 +80,17 @@ namespace CConn
                                 break;
                             }
 
-                            logger.Debug("Connected!");
+                            logger.Debug("New Connection Accepted!");
 
-                            var commHandler = new CommHandler(false, new TcpComm(client), logger);
+                            var commHandler = new CommHandler(
+                                false,
+                                new TcpComm(client),
+                                logger,
+                                recvBufferSize
+                                );
                             var commServerWrapper = new CommServerWrapper(commHandler);
 
-                            commHandler.SetOnCommCloseListener((handler, isForce) =>
+                            commHandler.SetOnCommCloseListener((CommHandler handler, bool isForce) =>
                                     {
                                         serverPubSubManager.RemoveCommWrapper(commServerWrapper);
                                     });
