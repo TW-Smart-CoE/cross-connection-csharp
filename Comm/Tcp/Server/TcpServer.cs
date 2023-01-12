@@ -60,8 +60,6 @@ namespace CConn
                     {
                         while (server != null)
                         {
-                            logger.Debug("Waiting for a connection ...");
-
                             System.Net.Sockets.TcpClient client;
                             try
                             {
@@ -80,8 +78,6 @@ namespace CConn
                                 break;
                             }
 
-                            logger.Debug("New Connection Accepted!");
-
                             var commHandler = new CommHandler(
                                 false,
                                 new TcpComm(client),
@@ -93,6 +89,7 @@ namespace CConn
                             commHandler.SetOnCommCloseListener((CommHandler handler, bool isForce) =>
                                     {
                                         serverPubSubManager.RemoveCommWrapper(commServerWrapper);
+                                        logger.Debug($"Current client count = {serverPubSubManager.ClientCount()}");
                                     });
                             commHandler.SetOnMsgArrivedListener((msg) =>
                                     {
@@ -100,6 +97,7 @@ namespace CConn
                                     });
 
                             serverPubSubManager.AddCommWrapper(commServerWrapper);
+                            logger.Debug($"Current client count = {serverPubSubManager.ClientCount()}");
 
                             Task.Run(() =>
                             {

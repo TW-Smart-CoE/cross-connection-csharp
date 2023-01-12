@@ -55,5 +55,10 @@
                     return null;
             }
         }
+
+        public static IBus CreateBus()
+        {
+            return new CrossConnectionBus();
+        }
     }
 }
