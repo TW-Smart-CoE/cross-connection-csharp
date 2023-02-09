@@ -2,7 +2,7 @@
 
 namespace CConn
 {
-    internal static class TopicUtils
+    public static class TopicUtils
     {
         public static string ToFullTopic(string appTopic, Method method)
         {
