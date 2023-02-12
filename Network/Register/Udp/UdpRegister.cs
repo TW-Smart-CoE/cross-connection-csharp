@@ -58,6 +58,8 @@ namespace CConn
                             Task.Delay(broadcastInterval).Wait();
                         }
                     }, TaskCreationOptions.LongRunning);
+
+            broadcaster.Close();
         }
 
         private byte[] BuildBroadcastMsg()
