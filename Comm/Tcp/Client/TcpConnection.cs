@@ -198,6 +198,7 @@ namespace CConn
                         }
 
                         subscribeManager.Subscribe(new Subscription(fullTopic, onDataArrived));
+                        onActionListener.OnSuccess();
                     });
         }
 

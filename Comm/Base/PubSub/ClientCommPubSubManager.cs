@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace CConn
 {
@@ -13,15 +14,18 @@ namespace CConn
             this.logger = logger;
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void Subscribe(Subscription subscription)
         {
             subscriptionMap[subscription.topic] = subscription;
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void Unsubscribe(string topic) {
             subscriptionMap.Remove(topic);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void Clear() {
             subscriptionMap.Clear();
         }
