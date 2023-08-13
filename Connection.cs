@@ -9,9 +9,9 @@ namespace CConn
     {
         REPORT = 0,
         QUERY = 1,
-        REPLY = 1,
-        REQUEST = 2,
-        RESPONSE = 3,
+        REPLY = 2,
+        REQUEST = 3,
+        RESPONSE = 4,
     }
 
     public enum ConnectionState
