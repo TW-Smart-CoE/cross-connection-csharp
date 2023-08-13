@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 
 namespace CConn
 {
@@ -39,21 +40,25 @@ namespace CConn
             this.serverCallback = serverCallback;
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         internal void AddCommWrapper(CommServerWrapper commServerWrapper)
         {
             commServerWrapperDict.Add(commServerWrapper.GetHashCode(), commServerWrapper);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         internal void RemoveCommWrapper(CommServerWrapper commServerWrapper)
         {
             commServerWrapperDict.Remove(commServerWrapper.GetHashCode());
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         internal int ClientCount()
         {
             return commServerWrapperDict.Count;
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         internal void ClearAllCommWrappers()
         {
             foreach (var pair in commServerWrapperDict)
@@ -66,6 +71,7 @@ namespace CConn
             commServerWrapperDict.Clear();
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         internal void HandlePublishMsgSelf(Msg msg)
         {
             var fullTopic = DataConverter.BytesToString(msg.topic);
