@@ -30,6 +30,7 @@ namespace CConn
             subscriptionMap.Clear();
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void InvokeMatchedCallback(string fullTopic, byte[] data)
         {
             foreach (var element in subscriptionMap)
