@@ -26,8 +26,11 @@ namespace CConn
         {
             foreach (var netInterface in NetworkInterface.GetAllNetworkInterfaces())
             {
+                // PC: NetworkInterfaceType.Wireless80211, NetworkInterfaceType.Ethernet
+                // Android: 0
                 if (netInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 ||
-                    netInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
+                    netInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet ||
+                    netInterface.NetworkInterfaceType == 0)
                 {
                     foreach (var addrInfo in netInterface.GetIPProperties().UnicastAddresses)
                     {
