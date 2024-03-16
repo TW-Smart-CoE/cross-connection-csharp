@@ -9,6 +9,8 @@ namespace CConn
         public const string PROP_MAX_RECONNECT_RETRY_TIME = "max_reconnect_retry_time";
         public const string PROP_BROADCAST_PORT = "broadcast_port";
         public const string PROP_BROADCAST_INTERVAL = "broadcast_interval";
+        public const string PROP_BROADCAST_DATA = "broadcast_data";
+        public const string PROP_BROADCAST_DEBUG_MODE = "broadcast_debug_mode";
         public const string PROP_FLAG = "flag";
         public const string PROP_SERVER_IP = "server_ip";
         public const string PROP_SERVER_PORT = "server_port";

@@ -4,26 +4,25 @@ namespace CConn
 {
     public class ConfigProps
     {
-        private IDictionary<string, string> dict = new Dictionary<string, string>();
+        private readonly IDictionary<string, object> dict = new Dictionary<string, object>();
 
-        public static ConfigProps create()
+        public static ConfigProps Create()
         {
             return new ConfigProps();
         }
 
         public ConfigProps Put<T>(string key, T value)
         {
-            dict[key] = value.ToString();
+            dict[key] = value;
 
             return this;
         }
 
         public string Get(string key, string defaultValue)
         {
-            string strValue = "";
-            if (dict.TryGetValue(key, out strValue))
+            if (dict.TryGetValue(key, out object data))
             {
-                return strValue;
+                return data.ToString();
             }
             else
             {
@@ -33,13 +32,12 @@ namespace CConn
 
         public bool Get(string key, bool defaultValue)
         {
-            string strValue = "";
-            if (dict.TryGetValue(key, out strValue))
+            if (dict.TryGetValue(key, out object data))
             {
-                bool data;
-                if (bool.TryParse(strValue, out data))
+                var strValue = data.ToString();
+                if (bool.TryParse(strValue, out bool result))
                 {
-                    return data;
+                    return result;
                 }
                 else
                 {
@@ -54,13 +52,12 @@ namespace CConn
 
         public int Get(string key, int defaultValue)
         {
-            string strValue = "";
-            if (dict.TryGetValue(key, out strValue))
+            if (dict.TryGetValue(key, out object data))
             {
-                int data;
-                if (int.TryParse(strValue, out data))
+                var strValue = data.ToString();
+                if (int.TryParse(strValue, out int result))
                 {
-                    return data;
+                    return result;
                 }
                 else
                 {
@@ -75,13 +72,12 @@ namespace CConn
 
         public uint Get(string key, uint defaultValue)
         {
-            string strValue = "";
-            if (dict.TryGetValue(key, out strValue))
+            if (dict.TryGetValue(key, out object data))
             {
-                uint data;
-                if (uint.TryParse(strValue, out data))
+                var strValue = data.ToString();
+                if (uint.TryParse(strValue, out uint result))
                 {
-                    return data;
+                    return result;
                 }
                 else
                 {
@@ -96,13 +92,12 @@ namespace CConn
 
         public short Get(string key, short defaultValue)
         {
-            string strValue = "";
-            if (dict.TryGetValue(key, out strValue))
+            if (dict.TryGetValue(key, out object data))
             {
-                short data;
-                if (short.TryParse(strValue, out data))
+                var strValue = data.ToString();
+                if (short.TryParse(strValue, out short result))
                 {
-                    return data;
+                    return result;
                 }
                 else
                 {
@@ -111,19 +106,18 @@ namespace CConn
             }
             else
             {
-                return defaultValue;
+                return defaultValue; 
             }
         }
 
         public ushort Get(string key, ushort defaultValue)
         {
-            string strValue = "";
-            if (dict.TryGetValue(key, out strValue))
+            if (dict.TryGetValue(key, out object data))
             {
-                ushort data;
-                if (ushort.TryParse(strValue, out data))
+                var strValue = data.ToString();
+                if (ushort.TryParse(strValue, out ushort result))
                 {
-                    return data;
+                    return result;
                 }
                 else
                 {
@@ -138,13 +132,12 @@ namespace CConn
 
         public long Get(string key, long defaultValue)
         {
-            string strValue = "";
-            if (dict.TryGetValue(key, out strValue))
+            if (dict.TryGetValue(key, out object data))
             {
-                long data;
-                if (long.TryParse(strValue, out data))
+                var strValue = data.ToString();
+                if (long.TryParse(strValue, out long result))
                 {
-                    return data;
+                    return result;
                 }
                 else
                 {
@@ -154,18 +147,17 @@ namespace CConn
             else
             {
                 return defaultValue;
-            }
+            } 
         }
 
         public ulong Get(string key, ulong defaultValue)
         {
-            string strValue = "";
-            if (dict.TryGetValue(key, out strValue))
+            if (dict.TryGetValue(key, out object data))
             {
-                ulong data;
-                if (ulong.TryParse(strValue, out data))
+                var strValue = data.ToString();
+                if (ulong.TryParse(strValue, out ulong result))
                 {
-                    return data;
+                    return result;
                 }
                 else
                 {
@@ -175,18 +167,17 @@ namespace CConn
             else
             {
                 return defaultValue;
-            }
+            } 
         }
 
         public float Get(string key, float defaultValue)
         {
-            string strValue = "";
-            if (dict.TryGetValue(key, out strValue))
+            if (dict.TryGetValue(key, out object data))
             {
-                float data;
-                if (float.TryParse(strValue, out data))
+                var strValue = data.ToString();
+                if (float.TryParse(strValue, out float result))
                 {
-                    return data;
+                    return result;
                 }
                 else
                 {
@@ -196,18 +187,17 @@ namespace CConn
             else
             {
                 return defaultValue;
-            }
+            } 
         }
 
         public double Get(string key, double defaultValue)
         {
-            string strValue = "";
-            if (dict.TryGetValue(key, out strValue))
+            if (dict.TryGetValue(key, out object data))
             {
-                double data;
-                if (double.TryParse(strValue, out data))
+                var strValue = data.ToString();
+                if (double.TryParse(strValue, out double result))
                 {
-                    return data;
+                    return result;
                 }
                 else
                 {
@@ -217,7 +207,19 @@ namespace CConn
             else
             {
                 return defaultValue;
+            }  
+        }
+
+        public byte[] GetBytes(string key, byte[] defaultValue)
+        {
+            if (dict.TryGetValue(key, out object data))
+            {
+                return data as byte[];
             }
+            else
+            {
+                return defaultValue;
+            } 
         }
     }
 }

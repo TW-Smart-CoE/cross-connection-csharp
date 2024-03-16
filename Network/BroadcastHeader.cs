@@ -2,17 +2,17 @@
 
 namespace CConn
 {
-    public struct BroadcastMsg 
+    public struct BroadcastHeader 
     {
         public uint flag;
         public uint ip;
         public ushort port;
-        public ushort reserved;
+        public ushort dataLen;
     }
 
-    public static class BroadcastMsgUtils
+    public static class BroadcastHeaderUtils
     {
-        public static void FromBytes(ref BroadcastMsg broadcastMsg, byte[] bytes)
+        public static void FromBytes(ref BroadcastHeader broadcastHeader, byte[] bytes)
         {
             if (bytes.Length < Constants.BROADCAST_MSG_HEADER_LEN)
             {
@@ -20,35 +20,35 @@ namespace CConn
             }
 
             var index = 0;
-            broadcastMsg.flag = bytes.GetUInt(index);
+            broadcastHeader.flag = bytes.GetUInt(index);
             index += sizeof(uint);
 
-            broadcastMsg.ip = bytes.GetUInt(index);
+            broadcastHeader.ip = bytes.GetUInt(index);
             index += sizeof(uint);
 
-            broadcastMsg.port = bytes.GetUShort(index);
+            broadcastHeader.port = bytes.GetUShort(index);
             index += sizeof(ushort);
 
-            broadcastMsg.reserved = bytes.GetUShort(index);
+            broadcastHeader.dataLen = bytes.GetUShort(index);
             index += sizeof(ushort);
         }
 
-        public static byte[] ToBytes(ref BroadcastMsg broadcastMsg, byte[] dstBytes = null)
+        public static byte[] ToBytes(ref BroadcastHeader broadcastHeader, byte[] dstBytes = null)
         {
             var bytes = dstBytes != null ? dstBytes : new byte[Constants.BROADCAST_MSG_HEADER_LEN];
 
             var index = 0;
 
-            bytes.PutUInt(index, broadcastMsg.flag);
+            bytes.PutUInt(index, broadcastHeader.flag);
             index += sizeof(uint);
 
-            bytes.PutUInt(index, broadcastMsg.ip);
+            bytes.PutUInt(index, broadcastHeader.ip);
             index += sizeof(uint);
 
-            bytes.PutUShort(index, broadcastMsg.port);
+            bytes.PutUShort(index, broadcastHeader.port);
             index += sizeof(ushort);
 
-            bytes.PutUShort(index, broadcastMsg.reserved);
+            bytes.PutUShort(index, broadcastHeader.dataLen);
             index += sizeof(ushort);
 
             return bytes;

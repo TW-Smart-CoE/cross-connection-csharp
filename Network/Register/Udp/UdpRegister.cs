@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
@@ -17,6 +18,8 @@ namespace CConn
         private uint flag;
         private uint serverIp;
         private int serverPort;
+        private byte[] data = null;
+        private bool debugMode = false;
 
         public void SetLogger(ILogger logger)
         {
@@ -28,11 +31,12 @@ namespace CConn
             broadcastPort = configProps.Get(PropKeys.PROP_BROADCAST_PORT, DEFAULT_BROADCAST_PORT);
             broadcastInterval = configProps.Get(PropKeys.PROP_BROADCAST_INTERVAL, DEFAULT_BROADCAST_INTERVAL);
             flag = configProps.Get(PropKeys.PROP_FLAG, DEFAULT_BROADCAST_FLAG);
-
             var strIp = configProps.Get(PropKeys.PROP_SERVER_IP, IpAddressUtils.GetLocalIpAddress().ToString());
             serverIp = IpAddressUtils.IpStringToUInt(strIp);
-
             serverPort = configProps.Get(PropKeys.PROP_SERVER_PORT, 0);
+            data = configProps.GetBytes(PropKeys.PROP_BROADCAST_DATA, null);
+            debugMode = configProps.Get(PropKeys.PROP_BROADCAST_DEBUG_MODE, false);
+
 
             StartUdpBroadCast();
         }
@@ -44,15 +48,27 @@ namespace CConn
 
         private void StartUdpBroadCast()
         {
-            var broadcaster = new UdpClient();
-            broadcaster.EnableBroadcast = true;
+            var broadcaster = new UdpClient
+            {
+                EnableBroadcast = true
+            };
             isSendBroadcast = true;
 
             Task.Factory.StartNew(() =>
                     {
                         while (isSendBroadcast)
                         {
-                            byte[] bytes = BuildBroadcastMsg();
+                            byte[] bytes = BuildBroadcastHeader();
+                            if (data != null)
+                            {
+                                bytes = bytes.Concat(data).ToArray();
+                            }
+
+                            if (debugMode)
+                            {
+                                logger.Debug($"Send broadcast (len={bytes.Length}): {bytes.ToHexString()}");
+                            }
+
                             broadcaster.Send(bytes, bytes.Length, new IPEndPoint(IPAddress.Broadcast, broadcastPort));
 
                             Task.Delay(broadcastInterval).Wait();
@@ -63,14 +79,17 @@ namespace CConn
 
         }
 
-        private byte[] BuildBroadcastMsg()
+        private byte[] BuildBroadcastHeader()
         {
-            var broadcastMsg = new BroadcastMsg();
-            broadcastMsg.flag = flag;
-            broadcastMsg.ip = serverIp;
-            broadcastMsg.port = (ushort) serverPort;
+            var broadcastHeader = new BroadcastHeader
+            {
+                flag = flag,
+                ip = serverIp,
+                port = (ushort)serverPort,
+                dataLen = (ushort)(data == null ? 0 : data.Length),
+            };
 
-            return BroadcastMsgUtils.ToBytes(ref broadcastMsg);
+            return BroadcastHeaderUtils.ToBytes(ref broadcastHeader);
         } 
     }
 }

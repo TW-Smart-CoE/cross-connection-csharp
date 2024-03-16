@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
@@ -13,6 +14,7 @@ namespace CConn
         private bool isKeepReceiving = false;
         private int broadcastPort;
         private uint flag;
+        private bool debugMode = false;
 
         public void SetLogger(ILogger logger)
         {
@@ -23,9 +25,10 @@ namespace CConn
         {
             broadcastPort = configProps.Get(PropKeys.PROP_BROADCAST_PORT, DEFAULT_BROADCAST_PORT);
             flag = configProps.Get(PropKeys.PROP_FLAG, UdpRegister.DEFAULT_BROADCAST_FLAG);
+            debugMode = configProps.Get(PropKeys.PROP_BROADCAST_DEBUG_MODE, false);
 
             broadcastListener = new UdpClient(broadcastPort);
-            IPEndPoint groupEP = new IPEndPoint(IPAddress.Any, broadcastPort);
+            IPEndPoint groupEP = new(IPAddress.Any, broadcastPort);
             isKeepReceiving = true;
 
             Task.Factory.StartNew(() =>
@@ -37,19 +40,46 @@ namespace CConn
                             logger.Debug(string.Format("Waiting for broadcast on port {0}", broadcastPort));
                             byte[] bytes = broadcastListener.Receive(ref groupEP);
 
-                            logger.Debug(string.Format("Received broadcast from {0}", groupEP.ToString()));
-                            if (bytes.Length == Constants.BROADCAST_MSG_HEADER_LEN)
+                            if (debugMode)
+                            {
+                                logger.Debug($"Received broadcast (len={bytes.Length}): {bytes.ToHexString()}");
+                            }
+
+                            if (bytes.Length >= Constants.BROADCAST_MSG_HEADER_LEN)
                             {
                                 var receiveMsgFlag = bytes.GetUInt(0);
                                 if (receiveMsgFlag == flag)
                                 {
-                                    var broadcastMsg = new BroadcastMsg();
-                                    BroadcastMsgUtils.FromBytes(ref broadcastMsg, bytes);
+                                    var broadcastHeader = new BroadcastHeader();
+                                    BroadcastHeaderUtils.FromBytes(ref broadcastHeader, bytes);
 
-                                    ConfigProps onFoundServiceProps = new ConfigProps();
-                                    onFoundServiceProps.Put(PropKeys.PROP_SERVER_IP, IpAddressUtils.UIntToIpString(broadcastMsg.ip));
-                                    onFoundServiceProps.Put(PropKeys.PROP_SERVER_PORT, broadcastMsg.port);
-                                    onFoundService.Invoke(onFoundServiceProps);
+                                    if (broadcastHeader.dataLen == bytes.Length - Constants.BROADCAST_MSG_HEADER_LEN)
+                                    {
+                                        ConfigProps onFoundServiceProps = new();
+                                        onFoundServiceProps.Put(PropKeys.PROP_SERVER_IP, IpAddressUtils.UIntToIpString(broadcastHeader.ip));
+                                        onFoundServiceProps.Put(PropKeys.PROP_SERVER_PORT, broadcastHeader.port);
+
+                                        if (broadcastHeader.dataLen > 0)
+                                        {
+                                            onFoundServiceProps.Put(PropKeys.PROP_BROADCAST_DATA, bytes.Skip(Constants.BROADCAST_MSG_HEADER_LEN).ToArray());
+                                        }
+                                        
+                                        onFoundService.Invoke(onFoundServiceProps);
+                                    }
+                                    else
+                                    {
+                                        if (debugMode)
+                                        {
+                                            logger.Error($"Invalid broadcast msg data len {bytes.Length - Constants.BROADCAST_MSG_HEADER_LEN}, but broadcast_header.data_len is {broadcastHeader.dataLen}");
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if (debugMode)
+                                    {
+                                        logger.Error($"Received broadcast flag does not match");
+                                    }
                                 }
                             }
                         }
