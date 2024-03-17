@@ -12,8 +12,8 @@ namespace CConn
 
         private class ServerCallback : IServerCallback
         {
-            private CrossConnectionBus crossConnectionBus;
-            private IServer server;
+            private readonly CrossConnectionBus crossConnectionBus;
+            private readonly IServer server;
 
             public ServerCallback(CrossConnectionBus crossConnectionBus, IServer server)
             {
@@ -36,8 +36,8 @@ namespace CConn
         }
 
         private ILogger logger = new DefaultLogger();
-        private Dictionary<ConnectionType, ServerStruct> serverMap = new Dictionary<ConnectionType, ServerStruct>();
-        private MsgThread<MessageObjPublish> msgThread = new MsgThread<MessageObjPublish>();
+        private readonly Dictionary<ConnectionType, ServerStruct> serverMap = new();
+        private readonly MsgThread<MessageObjPublish> msgThread = new();
         private bool isInitialized = false;
 
         public bool Initialize()
@@ -82,8 +82,7 @@ namespace CConn
                 return false;
             }
 
-            ServerStruct serverStruct;
-            if (!serverMap.TryGetValue(connectionType, out serverStruct))
+            if (!serverMap.TryGetValue(connectionType, out ServerStruct serverStruct))
             {
                 return false;
             }
@@ -102,15 +101,50 @@ namespace CConn
             return isStarted;
         }
 
+        public bool ResetRegister(
+            ConnectionType connectionType,
+            ConfigProps networkRegisterConfig
+        )
+        {
+            if (!isInitialized)
+            {
+                return false;
+            }
+
+            if (!serverMap.TryGetValue(connectionType, out ServerStruct serverStruct))
+            {
+                return false;
+            }
+
+            serverStruct.register.Unregister();
+            serverStruct.register.Register(networkRegisterConfig);
+            return true;
+        }
+
         public void StopAll()
         {
+            if (!isInitialized)
+            {
+                return;
+            }
+
             foreach (var entry in serverMap) 
             {
                 entry.Value.register.Unregister();
                 entry.Value.server.Stop();
             }
+        }
 
-            logger.Info($"CrossConnectionBus stopped");
+        public void Cleanup()
+        {
+            if (!isInitialized)
+            {
+                return;
+            }
+
+            serverMap.Clear();
+            msgThread.Stop();
+            isInitialized = false;
         }
 
         private void CreateMessageProcessingThread()

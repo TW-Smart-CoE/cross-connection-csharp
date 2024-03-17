@@ -39,7 +39,7 @@ namespace CConn
         {
             if (IsRunning)
             {
-                Enqueue(default(T));
+                Enqueue(default);
                 if (runningTask != null)
                 {
                     runningTask.Wait();

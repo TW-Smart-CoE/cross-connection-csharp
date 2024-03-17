@@ -8,6 +8,11 @@ namespace CConn
             ConfigProps serverConfig,
             ConfigProps networkRegisterConfig
             );
+        bool ResetRegister(
+            ConnectionType connectionType,
+            ConfigProps networkRegisterConfig
+        );
         void StopAll();
+        void Cleanup();
     }
 }
