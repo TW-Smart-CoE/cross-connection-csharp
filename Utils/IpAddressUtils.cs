@@ -36,7 +36,10 @@ namespace CConn
                     {
                         if (addrInfo.Address.AddressFamily == AddressFamily.InterNetwork)
                         {
-                            return addrInfo.Address;
+                            if (!addrInfo.Address.ToString().StartsWith("169.254"))
+                            {
+                                return addrInfo.Address;
+                            }
                         }
                     }
                 }
